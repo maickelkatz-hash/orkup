@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrkUp — Protótipo navegável</title>
+<style>
+  :root{
+    --blue-deep:#3a5b8c;
+    --blue:#4a76a8;
+    --blue-light:#eaf1fa;
+    --blue-lighter:#f5f8fc;
+    --border:#c9d9ec;
+    --text:#2b2f36;
+    --muted:#6b7789;
+    --accent:#ff9f43;
+    --brand-pink:#ec4899;
+    --danger:#c0392b;
+    --green:#2ecc71;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: Verdana, Arial, "Helvetica Neue", sans-serif;
+    background: var(--blue-light);
+    color: var(--text);
+  }
+  .hidden{display:none !important;}
+  .notice{
+    background:#fff7e6;
+    border-bottom:1px solid #f0d9a0;
+    color:#8a6100;
+    font-size:12px;
+    text-align:center;
+    padding:6px 10px;
+  }
+
+  /* ---------- LOGIN ---------- */
+  #view-login{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg, var(--blue) 0%, var(--blue-light) 320px);
+    padding:20px;
+  }
+  .login-shell{
+    background:#fff;
+    border-radius: var(--radius);
+    box-shadow:0 6px 24px rgba(0,0,0,.18);
+    width:340px;
+    max-width:100%;
+    overflow:hidden;
+  }
+  .login-hero{
+    background:linear-gradient(160deg, var(--blue-deep), var(--blue));
+    color:#fff;
+    padding:26px 24px;
+  }
+  .logo-mark{
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+  .logo-mark .brand-pink, .accent-text{color:var(--brand-pink);}
+  .hero-tagline{
+    font-size:13.5px;
+    line-height:1.5;
+    margin:12px 0 14px;
+    opacity:.95;
+  }
+  .hero-features{
+    list-style:disc;
+    padding-left:18px;
+    margin:0;
+    font-size:12.5px;
+    line-height:2;
+  }
+  .hero-features b{color:var(--brand-pink);}
+  .login-form-card{padding:22px 24px 26px;text-align:left;}
+  .login-form-card h2{margin:0 0 2px;font-size:19px;color:var(--text);}
+  .form-sub{color:var(--muted);font-size:12px;margin:0 0 14px;}
+  .tagline{color:var(--muted); font-size:12px; margin-bottom:20px;}
+  .login-form-card input{
+    width:100%;
+    padding:9px 10px;
+    margin-bottom:10px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:13px;
+  }
+  .btn{
+    display:inline-block;
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    padding:9px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:bold;
+  }
+  .btn:hover{background:var(--blue-deep);}
+  .btn.secondary{background:#fff;color:var(--blue);border:1px solid var(--blue);}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .login-form-card .btn{width:100%;}
+  .login-hint{font-size:11px;color:var(--muted);margin-top:14px;}
+  .credit-line{font-size:11px;color:var(--muted);margin-top:12px;text-align:center;}
+
+  /* ---------- APP SHELL ---------- */
+  #view-app{min-height:100vh;}
+  .topbar{
+    background:var(--blue-deep);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 16px;
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .topbar .logo{color:#fff; font-size:22px; margin:0;}
+  .nav{
+    display:flex;
+    gap:4px;
+  }
+  .nav button{
+    background:transparent;
+    border:none;
+    color:#dbe7f7;
+    font-size:12px;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+  }
+  .nav button.active, .nav button:hover{
+    background:rgba(255,255,255,.15);
+    color:#fff;
+  }
+  .topbar .user-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  @media (max-width:640px){
+    .topbar{flex-wrap:wrap;row-gap:6px;}
+    .nav{order:3;width:100%;overflow-x:auto;justify-content:flex-start;padding-top:2px;-webkit-overflow-scrolling:touch;}
+    .nav::-webkit-scrollbar{display:none;}
+    .nav button{padding:6px 9px;font-size:11.5px;white-space:nowrap;flex-shrink:0;}
+  }
+
+  .layout{
+    max-width:900px;
+    margin:16px auto;
+    padding:0 12px;
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:14px;
+  }
+  @media (max-width:700px){ .layout{grid-template-columns:1fr;} .sidebar{order:2;} }
+
+  .box{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .box-header{
+    background:var(--blue-light);
+    color:var(--blue-deep);
+    font-size:12px;
+    font-weight:bold;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    padding:8px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  .box-body{padding:12px;}
+
+  .avatar{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--blue);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:bold;font-size:14px;
+    flex-shrink:0;
+  }
+  .avatar.sm{width:28px;height:28px;font-size:11px;}
+  .avatar.lg{width:72px;height:72px;font-size:24px;}
+
+  /* sidebar profile mini card */
+  .mini-profile{text-align:center;padding:14px 10px;}
+  .mini-profile .avatar{margin:0 auto 8px;}
+  .mini-profile .name{font-weight:bold;font-size:13px;}
+  .mini-profile .stats{display:flex;justify-content:space-around;margin-top:10px;font-size:11px;color:var(--muted);}
+  .mini-profile .stats b{display:block;color:var(--blue-deep);font-size:14px;}
+
+  .ad-box{
+    border:1px dashed #c9b98b;
+    background:#fffdf6;
+    border-radius:8px;
+    padding:10px;
+    text-align:center;
+    font-size:11px;
+    color:#8a7a4f;
+    margin:10px 0;
+  }
+  .ad-box b{display:block;font-size:13px;color:#6b5c30;margin-bottom:3px;}
+  .ad-box-inline{margin:10px 12px;}
+
+  /* ---------- FEED ---------- */
+  .composer textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px;
+    font-family:inherit;
+    font-size:13px;
+    resize:vertical;
+    min-height:50px;
+  }
+  .composer-actions{display:flex;justify-content:flex-end;margin-top:6px;}
+
+  .post{
+    display:flex;
+    gap:10px;
+    padding:12px;
+    border-bottom:1px solid #eef2f7;
+  }
+  .post:last-child{border-bottom:none;}
+  .post .name{font-weight:bold;font-size:13px;color:var(--blue-deep);}
+  .post .time{font-size:11px;color:var(--muted);margin-left:6px;font-weight:normal;}
+  .post .text{font-size:13px;margin:4px 0 8px;line-height:1.4;}
+  .post .photo{
+    background:var(--blue-light);
+    border:1px solid var(--border);
+    border-radius:8px;
+    height:140px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;
+    margin-bottom:8px;
+  }
+  .post-actions{display:flex;gap:14px;font-size:12px;color:var(--muted);}
+  .post-actions button{
+    background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:2px 4px;
+  }
+  .post-actions button.liked{color:var(--danger);font-weight:bold;}
+  .comments{margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;}
+  .comment{font-size:12px;margin-bottom:5px;}
+  .comment b{color:var(--blue-deep);}
+  .comment-input{display:flex;gap:6px;margin-top:6px;}
+  .comment-input input{flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:14px;font-size:12px;}
+
+  /* ---------- COMUNIDADES ---------- */
+  .community-card{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    padding:10px 12px;
+    border-bottom:1px solid #eef2f7;
+  }
+  .community-card:last-child{border-bottom:none;}
+  .community-emoji{
+    width:44px;height:44px;border-radius:8px;background:var(--blue-light);
+    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  }
+  .community-card .cname{font-weight:bold;font-size:13px;}
+  .community-card .cmeta{font-size:11px;color:var(--muted);}
+  .community-card .grow{flex:1;}
+  .bubble-note{
+    background:var(--blue-lighter);
+    border-left:3px solid var(--blue);
+    font-size:11px;
+    color:var(--blue-deep);
+    padding:8px 10px;
+    margin:10px 12px;
+    border-radius:4px;
+  }
+
+  .topic{padding:10px 12px;border-bottom:1px solid #eef2f7;cursor:pointer;}
+  .topic:hover{background:var(--blue-lighter);}
+  .topic .ttitle{font-weight:bold;font-size:13px;color:var(--blue-deep);}
+  .topic .tmeta{font-size:11px;color:var(--muted);}
+
+  .reply{padding:8px 0;border-bottom:1px dashed #eef2f7;font-size:12.5px;}
+  .reply b{color:var(--blue-deep);}
+  .back-link{font-size:12px;color:var(--blue);cursor:pointer;display:inline-block;margin-bottom:10px;}
+
+  /* ---------- MENSAGENS ---------- */
+  .messenger{display:grid;grid-template-columns:220px 1fr;min-height:420px;}
+  @media (max-width:700px){.messenger{grid-template-columns:1fr;}}
+  .friend-list{border-right:1px solid var(--border);}
+  .friend-row{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f4f8;
+    position:relative;
+  }
+  .friend-row:hover, .friend-row.active{background:var(--blue-lighter);}
+  .friend-row .fname{font-size:12.5px;font-weight:bold;}
+  .friend-row .fstatus{font-size:10.5px;color:var(--muted);}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);position:absolute;left:34px;top:11px;border:2px solid #fff;}
+  .chat-area{display:flex;flex-direction:column;height:420px;}
+  .chat-header{padding:10px 12px;border-bottom:1px solid var(--border);font-weight:bold;font-size:13px;display:flex;align-items:center;gap:8px;}
+  .chat-messages{flex:1;padding:12px;overflow-y:auto;background:var(--blue-lighter);}
+  .msg{max-width:70%;padding:7px 10px;border-radius:12px;font-size:12.5px;margin-bottom:8px;line-height:1.35;}
+  .msg.me{background:var(--blue);color:#fff;margin-left:auto;border-bottom-right-radius:2px;}
+  .msg.them{background:#fff;border:1px solid var(--border);margin-right:auto;border-bottom-left-radius:2px;}
+  .chat-input{display:flex;gap:6px;padding:10px;border-top:1px solid var(--border);}
+  .chat-input input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:16px;font-size:12.5px;}
+  .empty-chat{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;text-align:center;padding:20px;}
+
+  .stranger-card{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #eef2f7;}
+  .locked{color:var(--muted);font-size:11px;}
+
+  /* ---------- SELO DE VERIFICAÇÃO ---------- */
+  .verified-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--blue);color:#fff;font-size:9px;line-height:1;
+    margin-left:3px;flex-shrink:0;vertical-align:middle;cursor:help;
+  }
+  .page-tag{font-size:10.5px;color:var(--brand-pink);font-weight:bold;margin-left:4px;}
+  .verify-note{font-size:11px;color:var(--muted);background:var(--blue-lighter);border-left:3px solid var(--brand-pink);padding:8px 10px;border-radius:4px;margin-bottom:10px;}
+
+  /* ---------- PÁGINAS PÚBLICAS ---------- */
+  .page-card{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #eef2f7;}
+  .page-card:last-child{border-bottom:none;}
+  .page-card .pgname{font-weight:bold;font-size:13px;}
+  .page-card .pgmeta{font-size:11px;color:var(--muted);}
+  .page-emoji{width:44px;height:44px;border-radius:8px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .page-author-link{cursor:pointer;}
+  .page-author-link:hover{text-decoration:underline;}
+
+  /* ---------- PERFIL ---------- */
+  .profile-header{
+    background:linear-gradient(135deg, var(--blue), var(--blue-deep));
+    padding:20px;color:#fff;display:flex;gap:14px;align-items:center;
+  }
+  .profile-header .avatar{background:#fff;color:var(--blue-deep);}
+  .profile-header .pname{font-size:18px;font-weight:bold;}
+  .profile-header .pbio{font-size:12px;opacity:.9;}
+  .profile-stats{display:flex;gap:0;background:var(--blue-lighter);}
+  .profile-stats div{flex:1;text-align:center;padding:10px;font-size:11px;color:var(--muted);border-right:1px solid var(--border);}
+  .profile-stats div:last-child{border-right:none;}
+  .profile-stats b{display:block;font-size:15px;color:var(--blue-deep);}
+  .recado{padding:8px 0;border-bottom:1px dashed var(--border);font-size:12.5px;}
+  .recado b{color:var(--blue-deep);}
+  .settings-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:12.5px;border-bottom:1px solid #f1f4f8;}
+  .switch{position:relative;width:36px;height:20px;background:#ccc;border-radius:20px;cursor:pointer;flex-shrink:0;}
+  .switch.on{background:var(--green);}
+  .switch .knob{position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.15s;}
+  .switch.on .knob{left:18px;}
+
+  /* ---------- AI FAB + MODAL ---------- */
+  .ai-fab{
+    position:fixed;right:18px;bottom:18px;
+    background:var(--accent);color:#fff;border:none;
+    padding:12px 18px;border-radius:30px;
+    font-weight:bold;font-size:13px;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+    cursor:pointer;z-index:30;
+  }
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(20,30,45,.55);
+    display:flex;align-items:center;justify-content:center;z-index:50;padding:14px;
+  }
+  .modal-box{
+    background:#fff;border-radius:var(--radius);
+    width:100%;max-width:400px;max-height:88vh;
+    display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 10px 40px rgba(0,0,0,.3);
+  }
+  .modal-header{background:var(--blue-deep);color:#fff;padding:10px 14px;font-weight:bold;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+  .modal-header .close{cursor:pointer;font-size:16px;opacity:.8;}
+  .modal-body{padding:14px;overflow-y:auto;}
+  .ai-disclaimer{font-size:10.5px;color:var(--muted);text-align:center;padding:6px 10px;background:var(--blue-lighter);}
+  .ai-chat-messages{flex:1;overflow-y:auto;padding:12px;background:var(--blue-lighter);min-height:260px;max-height:340px;}
+  .msg.ai{background:#fff;border:1px solid var(--border);}
+  .msg.crisis{background:#fff3f0;border:1px solid #f0b8a8;color:#7a2a17;}
+  .msg.crisis b{display:block;margin-bottom:3px;}
+  .age-check{font-size:12.5px;line-height:1.5;}
+  .age-check label{display:flex;gap:8px;align-items:flex-start;margin:12px 0;}
+
+  .footer-note{
+    text-align:center;font-size:11px;color:var(--muted);padding:20px 10px 40px;
+  }
+
+  /* ---------- utilitários (evita style="" inline) ---------- */
+  .mt-neg{margin-top:-14px;}
+  .accent-text{color:#ffd27a;}
+  .muted-note{font-size:11px;color:var(--muted);}
+  .fs12{font-size:12px;}
+  .p0{padding:0;}
+  .min-h-sm{min-height:34px;}
+  .min-h-md{min-height:40px;}
+  .top-border{border-top:1px solid var(--border);}
+  .w-full{width:100%;}
+  .flex1{flex:1;}
+  .mb4{margin-bottom:4px;}
+  .muted-inline{color:var(--muted);}
+  .green-inline{color:var(--green);}
+  .col-gap4{display:flex;flex-direction:column;gap:4px;}
+  .online-tag{color:var(--green);font-size:11px;}
+  .read-receipt{font-size:9px;opacity:.7;margin-top:2px;}
+  .crisis-note{font-size:9px;margin-top:6px;opacity:.7;}
+</style>
+</head>
+<body>
+
+<div class="notice">🧪 Protótipo navegável do OrkUp — dados de exemplo, interações funcionam apenas nesta sessão (nada é salvo de verdade).</div>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="view-login">
+  <div class="login-shell">
+    <div class="login-hero">
+      <div class="logo-mark">ork<span class="brand-pink">UP</span></div>
+      <p class="hero-tagline">A nostalgia que você sentia. A rede social que ficou marcada na memória — agora moderna e do seu jeito.</p>
+      <ul class="hero-features">
+        <li>Crie e personalize seu perfil</li>
+        <li>Receba <b>depoimentos</b> dos amigos</li>
+        <li>Entre em <b>comunidades</b> por interesse</li>
+        <li>Deixe e receba <b>recados</b></li>
+      </ul>
+    </div>
+    <div class="login-form-card">
+      <h2>Entrar</h2>
+      <p class="form-sub">Bem-vindo(a) de volta!</p>
+      <input type="text" id="login-name" placeholder="Seu nome" value="Beatriz Oliveira">
+      <input type="text" id="login-email" placeholder="E-mail" value="beatriz.oliveira@exemplo.com">
+      <button class="btn" data-action="login">Entrar no OrkUp</button>
+      <div class="login-hint">Protótipo de demonstração — qualquer nome funciona.</div>
+      <div class="credit-line">💙 ideia original de Beatriz Oliveira — primeira usuária de exemplo do OrkUp</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="view-app" class="hidden">
+  <div class="topbar">
+    <div class="logo">ork<span class="accent-text">UP</span></div>
+    <div class="nav">
+      <button id="nav-feed" data-action="switch-page" data-page="feed">Início</button>
+      <button id="nav-comunidades" data-action="switch-page" data-page="comunidades">Comunidades</button>
+      <button id="nav-paginas" data-action="switch-page" data-page="paginas">Páginas</button>
+      <button id="nav-mensagens" data-action="switch-page" data-page="mensagens">Mensagens</button>
+      <button id="nav-perfil" data-action="switch-page" data-page="perfil">Perfil</button>
+    </div>
+    <div class="user-chip">
+      <div class="avatar sm" id="topbar-avatar">?</div>
+      <span id="topbar-name"></span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="box">
+        <div class="mini-profile">
+          <div class="avatar" id="side-avatar">?</div>
+          <div class="name" id="side-name"></div>
+          <div class="muted-note">Bem-vindo(a) de volta!</div>
+          <div class="stats">
+            <div><b>32</b>fãs</div>
+            <div><b>7</b>comunid.</div>
+            <div><b>128</b>visitas</div>
+          </div>
+        </div>
+      </div>
+      <div class="ad-box">
+        <b>Espaço de anúncio</b>
+        Google AdSense (exemplo) — posicionado fora do fluxo de conteúdo, como definido na spec.
+      </div>
+      <div class="box">
+        <div class="box-header">Amigos online</div>
+        <div class="box-body fs12" id="side-friends-online"></div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+      <!-- FEED -->
+      <div id="page-feed" class="page">
+        <div class="box">
+          <div class="box-header">O que você está pensando?</div>
+          <div class="box-body composer">
+            <textarea id="post-text" placeholder="Escreva uma postagem..."></textarea>
+            <div class="composer-actions">
+              <button class="btn small" data-action="add-post">Publicar</button>
+            </div>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-header">Timeline</div>
+          <div class="box-body p0" id="feed-list"></div>
+        </div>
+      </div>
+
+      <!-- COMUNIDADES LIST -->
+      <div id="page-comunidades" class="page hidden">
+        <div class="box">
+          <div class="box-header">Comunidades / Fórum</div>
+          <div class="bubble-note">💬 Cada comunidade é um espaço fechado: os tópicos daqui não aparecem misturados no feed de quem não participa — é assim que evitamos que bolhas diferentes se cruzem e brigem.</div>
+          <div class="box-body p0" id="community-list"></div>
+        </div>
+      </div>
+
+      <!-- COMUNIDADE DETAIL -->
+      <div id="page-comunidade-detail" class="page hidden">
+        <span class="back-link" data-action="switch-page" data-page="comunidades">← voltar para comunidades</span>
+        <div class="box">
+          <div class="box-header" id="community-detail-title">Comunidade</div>
+          <div class="box-body p0" id="topic-list"></div>
+        </div>
+        <div class="box">
+          <div class="box-header">Novo tópico</div>
+          <div class="box-body composer">
+            <textarea id="topic-text" placeholder="Título do novo tópico..." class="min-h-sm"></textarea>
+            <div class="composer-actions"><button class="btn small" data-action="add-topic">Criar tópico</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOPIC DETAIL -->
+      <div id="page-topic-detail" class="page hidden">
+        <span class="back-link" data-action="back-to-community">← voltar para a comunidade</span>
+        <div class="box">
+          <div class="box-header" id="topic-detail-title">Tópico</div>
+          <div class="box-body" id="reply-list"></div>
+          <div class="box-body composer top-border">
+            <textarea id="reply-text" placeholder="Responder neste tópico..." class="min-h-md"></textarea>
+            <div class="composer-actions"><button class="btn small" data-action="add-reply">Responder</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PÁGINAS PÚBLICAS -->
+      <div id="page-paginas" class="page hidden">
+        <div class="box">
+          <div class="box-header">Páginas Públicas — empresas e perfis públicos</div>
+          <div class="bubble-note">📌 Posts de Páginas aparecem no seu feed misturados com os de amigos, sempre em ordem cronológica — o selo ✓ confirma identidade, mas nunca dá mais alcance (spec, seções 3.7 e 4.1).</div>
+          <div class="box-body p0" id="page-list"></div>
+        </div>
+      </div>
+
+      <!-- PÁGINA DETAIL -->
+      <div id="page-pagina-detail" class="page hidden">
+        <span class="back-link" data-action="switch-page" data-page="paginas">← voltar para Páginas</span>
+        <div class="box">
+          <div class="profile-header" id="pagina-detail-header"></div>
+          <div class="profile-stats" id="pagina-detail-stats"></div>
+          <div class="box-body">
+            <button class="btn small" id="pagina-follow-btn"></button>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-header">Publicações da página</div>
+          <div class="box-body p0" id="pagina-detail-posts"></div>
+        </div>
+      </div>
+
+      <!-- MENSAGENS -->
+      <div id="page-mensagens" class="page hidden">
+        <div class="box">
+          <div class="box-header">Mensageiro — só entre amigos, sempre privado</div>
+          <div class="messenger">
+            <div class="friend-list" id="friend-list"></div>
+            <div class="chat-area" id="chat-area">
+              <div class="empty-chat">Selecione um amigo à esquerda para conversar.</div>
+            </div>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-header">Sugestão de amizade</div>
+          <div class="box-body" id="stranger-box"></div>
+        </div>
+      </div>
+
+      <!-- PERFIL -->
+      <div id="page-perfil" class="page hidden">
+        <div class="box">
+          <div class="profile-header">
+            <div class="avatar lg" id="profile-avatar">?</div>
+            <div>
+              <div class="pname" id="profile-name"></div>
+              <div class="pbio">Nostálgico(a) de Orkut · mora na região piloto do OrkUp</div>
+            </div>
+          </div>
+          <div class="profile-stats">
+            <div><b>32</b>fãs</div>
+            <div><b>128</b>visitas</div>
+            <div><b>7</b>comunidades</div>
+          </div>
+          <div class="box-body">
+            <div class="settings-row">
+              <span>Mostrar "online agora" para amigos</span>
+              <div class="switch on" id="toggle-online" data-action="toggle-online-status"><div class="knob"></div></div>
+            </div>
+            <div class="settings-row">
+              <span>Confirmação de leitura de mensagens</span>
+              <div class="switch" id="toggle-readreceipt" data-action="toggle-read-receipt"><div class="knob"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-header">Selo de verificação</div>
+          <div class="box-body">
+            <div class="verify-note">O selo ✓ só confirma que é você mesmo(a) — nunca aumenta o alcance dos seus posts, porque o OrkUp não tem algoritmo de priorização pra ninguém (spec, seção 3.7).</div>
+            <div id="verify-status"></div>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-header">Recados</div>
+          <div class="box-body">
+            <div id="recados-list"></div>
+            <div class="comment-input">
+              <input type="text" id="recado-text" placeholder="Deixe um recado no seu próprio mural (demo)...">
+              <button class="btn small" data-action="add-recado">Enviar</button>
+            </div>
+          </div>
+        </div>
+        <div class="ad-box">
+          <b>Espaço de anúncio</b>
+          Google AdSense (exemplo) — no rodapé do perfil, fora do fluxo de recados.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <button class="ai-fab" data-action="open-age-gate">💬 Conversar com IA</button>
+  <div class="footer-note">Protótipo do OrkUp — construído para validar a experiência antes de investir em backend real.</div>
+</div>
+
+<!-- AGE GATE MODAL -->
+<div id="age-gate-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">Antes de continuar <span class="close" data-action="close-modal" data-modal="age-gate-modal">✕</span></div>
+    <div class="modal-body age-check">
+      <p>O <b>Amigo Virtual de IA</b> é recomendado apenas para maiores de 18 anos, conforme desenhado na especificação do produto (seção 11).</p>
+      <label><input type="checkbox" id="age-confirm"> Confirmo que tenho 18 anos ou mais.</label>
+      <button class="btn w-full" data-action="confirm-age">Entrar no chat</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI MODAL -->
+<div id="ai-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">💬 Amigo Virtual de IA <span class="close" data-action="close-modal" data-modal="ai-modal">✕</span></div>
+    <div class="ai-disclaimer">Isto é uma <b>inteligência artificial</b>, não uma pessoa real. Simulação de demonstração — na versão final usaria Gemini/Groq conforme a spec (seção 11.1).</div>
+    <div class="ai-chat-messages" id="ai-chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="ai-input" placeholder="Digite uma mensagem...">
+      <button class="btn small" data-action="send-ai-message">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ======================= ESTADO (tudo em memória, nada persiste) ======================= */
+const state = {
+  me: { name: "Beatriz Oliveira", initials: "BO", verified: false },
+  showOnline: true,
+  readReceipts: false,
+  posts: [
+    { id:1, author:"Renata Alves", initials:"RA", time:"há 2h", text:"Gente, achei um grupo aqui do bairro que lembra muito o clima do Orkut antigo! Que saudade de comunidade de verdade 😍", photo:"📷", likes:14, liked:false,
+      comments:[{author:"Diego Souza", text:"Migrando pra cá também!"}] },
+    { id:4, author:"Padaria da Vila", initials:"🥖", isPage:true, pageId:1, verified:true, time:"há 3h", text:"Hoje o pão de queijo saiu quentinho às 7h! Bora chegar cedo 😄", photo:null, likes:22, liked:false, comments:[] },
+    { id:2, author:"Diego Souza", initials:"DS", time:"há 5h", text:"Alguém mais participando da comunidade de Rock Nacional? Bora marcar um encontro na região.", photo:null, likes:6, liked:false, comments:[] },
+    { id:3, author:"Camila Duarte", initials:"CD", time:"ontem", text:"Primeira postagem por aqui! Ansiosa pra ver como vai ficar o fórum de comunidades.", photo:"🌻", likes:9, liked:false, comments:[] },
+  ],
+  pages: [
+    { id:1, name:"Padaria da Vila", type:"Página · Empresa", verified:true, followers:842, emoji:"🥖",
+      bio:"Pão fresquinho toda manhã, no bairro desde 1998.",
+      posts:[
+        { time:"há 3h", text:"Hoje o pão de queijo saiu quentinho às 7h! Bora chegar cedo 😄", likes:22, comments:2 },
+        { time:"há 2 dias", text:"Sexta-feira tem promoção de pão doce pra quem segue a página aqui no OrkUp!", likes:35, comments:5 }
+      ]},
+    { id:2, name:"Ana Beatriz Fotografia", type:"Página · Criadora", verified:false, followers:156, emoji:"📷",
+      bio:"Fotografia de eventos na região — casamentos, aniversários e ensaios.",
+      posts:[
+        { time:"há 6h", text:"Ensaio de aniversário de ontem ficou lindo, olha só!", likes:31, comments:4 }
+      ]},
+    { id:3, name:"Estúdio Zen Yoga", type:"Página · Empresa", verified:false, followers:64, emoji:"🧘",
+      bio:"Aulas de yoga ao ar livre no parque, todo sábado de manhã.",
+      posts:[
+        { time:"ontem", text:"Aula de sábado confirmada, 8h no parque. Tragam o tapete!", likes:12, comments:1 }
+      ]}
+  ],
+  followedPages: [1],
+  communities: [
+    { id:1, emoji:"🎸", name:"Fãs de Rock Nacional", members:412,
+      topics:[
+        { id:11, title:"Melhor show que vocês já foram?", author:"Diego Souza", replies:[
+          {author:"Renata Alves", text:"Legião Urbana em 2005, inesquecível."},
+          {author:"Camila Duarte", text:"Titãs ano passado foi incrível!"}
+        ]},
+        { id:12, title:"Playlist da semana", author:"Camila Duarte", replies:[
+          {author:"Diego Souza", text:"Bota Skank aí que não erra."}
+        ]}
+      ]
+    },
+    { id:2, emoji:"🌱", name:"Amantes de Jardinagem", members:187,
+      topics:[
+        { id:21, title:"Dicas pra suculenta não morrer", author:"Camila Duarte", replies:[
+          {author:"Renata Alves", text:"Regar pouco é a chave, eu regava demais no início."}
+        ]},
+        { id:22, title:"Troca de mudas na região", author:"Renata Alves", replies:[] }
+      ]
+    },
+    { id:3, emoji:"🍝", name:"Cozinha Regional", members:298, topics:[
+        { id:31, title:"Receita de família pra compartilhar", author:"Diego Souza", replies:[] }
+      ]
+    }
+  ],
+  friends: [
+    { id:1, name:"Renata Alves", initials:"RA", online:true, messages:[
+      {from:"them", text:"Oi! Vi sua postagem sobre comunidades, migrou de vez pro OrkUp? 😄"},
+    ]},
+    { id:2, name:"Diego Souza", initials:"DS", online:true, messages:[] },
+    { id:3, name:"Camila Duarte", initials:"CD", online:false, messages:[] },
+  ],
+  stranger: { name:"Ana Beatriz", initials:"AB", isFriend:false },
+  activeCommunityId: null,
+  activeTopicId: null,
+  activeFriendId: null,
+  activePageId: null,
+  ageConfirmed: false,
+  aiMessages: [],
+};
+
+const AI_GENERIC = [
+  "Que legal que você me contou isso! Como foi o resto do seu dia?",
+  "Entendi. Quer me contar um pouco mais sobre isso?",
+  "Isso faz sentido. Tem alguma comunidade do OrkUp sobre esse assunto que você já participa?",
+  "Obrigado por compartilhar comigo. Estou aqui se quiser conversar mais."
+];
+const AI_LONELY = [
+  "Sinto muito que você esteja se sentindo assim. Às vezes ajuda conversar com gente de verdade também — que tal dar uma olhada nas comunidades do OrkUp da sua região? Tem gente com interesses parecidos com os seus.",
+  "Obrigado por confiar em mim pra falar sobre isso. Eu sou só uma IA, mas o OrkUp tem comunidades cheias de gente querendo se conectar — posso te sugerir uma?"
+];
+const AI_CRISIS_MSG = "Percebi que você pode estar passando por um momento muito difícil. Você não está sozinho(a) — o CVV (Centro de Valorização da Vida) oferece apoio emocional gratuito, 24h por dia, pelo telefone 188, ou pelo chat em cvv.org.br. Se puder, considere também conversar com alguém de confiança agora.";
+
+/* ======================= LOGIN ======================= */
+function doLogin(){
+  const name = document.getElementById('login-name').value.trim() || "Visitante";
+  state.me.name = name;
+  state.me.initials = name.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('view-login').classList.add('hidden');
+  document.getElementById('view-app').classList.remove('hidden');
+  document.getElementById('topbar-name').textContent = name;
+  document.getElementById('topbar-avatar').textContent = state.me.initials;
+  document.getElementById('side-name').textContent = name;
+  document.getElementById('side-avatar').textContent = state.me.initials;
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-avatar').textContent = state.me.initials;
+  renderAll();
+  switchPage('feed');
+}
+
+/* ======================= NAVEGAÇÃO ======================= */
+function switchPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.remove('hidden');
+  const navBtn = document.getElementById('nav-'+page);
+  if(navBtn) navBtn.classList.add('active');
+  if(page==='comunidades') renderCommunityList();
+  if(page==='paginas') renderPageList();
+  if(page==='mensagens') renderMensagens();
+  if(page==='perfil') renderPerfil();
+  if(page==='feed') renderFeed();
+}
+
+function renderAll(){
+  renderFeed();
+  renderCommunityList();
+  renderPageList();
+  renderMensagens();
+  renderPerfil();
+  renderSideFriends();
+}
+
+/* ======================= SELO DE VERIFICAÇÃO (utilitário) ======================= */
+function badgeHtml(isVerified){
+  return isVerified ? '<span class="verified-badge" title="Selo de verificação — confirma identidade, não aumenta alcance">✓</span>' : '';
+}
+
+/* ======================= FEED ======================= */
+function renderFeed(){
+  const el = document.getElementById('feed-list');
+  el.innerHTML = '';
+  state.posts.forEach((p, idx)=>{
+    const div = document.createElement('div');
+    div.className = 'post';
+    const authorAttrs = p.isPage ? ` class="page-author-link" data-action="open-page" data-id="${p.pageId}"` : '';
+    div.innerHTML = `
+      <div class="avatar sm">${p.initials}</div>
+      <div class="flex1">
+        <span class="name"><span${authorAttrs}>${escapeHtml(p.author)}</span>${badgeHtml(p.verified)}${p.isPage ? '<span class="page-tag">· Página</span>' : ''}<span class="time">${p.time}</span></span>
+        <div class="text">${escapeHtml(p.text)}</div>
+        ${p.photo ? `<div class="photo">${p.photo}</div>` : ''}
+        <div class="post-actions">
+          <button class="${p.liked?'liked':''}" data-action="toggle-like" data-id="${p.id}">${p.liked?'❤️ Curtido':'🤍 Curtir'} (${p.likes})</button>
+          <button data-action="focus-comment" data-id="${p.id}">💬 Comentar (${p.comments.length})</button>
+        </div>
+        <div class="comments">
+          ${p.comments.map(c=>`<div class="comment"><b>${escapeHtml(c.author)}:</b> ${escapeHtml(c.text)}</div>`).join('')}
+          <div class="comment-input">
+            <input type="text" id="comment-input-${p.id}" placeholder="Escreva um comentário...">
+            <button class="btn small" data-action="add-comment" data-id="${p.id}">Enviar</button>
+          </div>
+        </div>
+      </div>`;
+    el.appendChild(div);
+    // insert ad every 2 posts
+    if((idx+1) % 2 === 0){
+      const ad = document.createElement('div');
+      ad.className = 'ad-box ad-box-inline';
+      ad.innerHTML = '<b>Espaço de anúncio</b>Google AdSense (exemplo) — intercalado no feed, fora do fluxo de posts.';
+      el.appendChild(ad);
+    }
+  });
+}
+function addPost(){
+  const txt = document.getElementById('post-text').value.trim();
+  if(!txt) return;
+  state.posts.unshift({ id: Date.now(), author: state.me.name, initials: state.me.initials, verified: state.me.verified, time:"agora", text:txt, photo:null, likes:0, liked:false, comments:[] });
+  document.getElementById('post-text').value='';
+  renderFeed();
+}
+function toggleLike(id){
+  const p = state.posts.find(x=>x.id===id);
+  p.liked = !p.liked;
+  p.likes += p.liked ? 1 : -1;
+  renderFeed();
+}
+function focusComment(id){
+  document.getElementById('comment-input-'+id).focus();
+}
+function addComment(id){
+  const input = document.getElementById('comment-input-'+id);
+  const txt = input.value.trim();
+  if(!txt) return;
+  const p = state.posts.find(x=>x.id===id);
+  p.comments.push({author: state.me.name, text: txt});
+  renderFeed();
+}
+
+/* ======================= COMUNIDADES ======================= */
+function renderCommunityList(){
+  const el = document.getElementById('community-list');
+  el.innerHTML = '';
+  state.communities.forEach(c=>{
+    const div = document.createElement('div');
+    div.className = 'community-card';
+    div.innerHTML = `
+      <div class="community-emoji">${c.emoji}</div>
+      <div class="grow">
+        <div class="cname">${c.name}</div>
+        <div class="cmeta">${c.members} membros · ${c.topics.length} tópicos</div>
+      </div>
+      <button class="btn small secondary" data-action="open-community" data-id="${c.id}">Entrar</button>`;
+    el.appendChild(div);
+  });
+}
+function openCommunity(id){
+  state.activeCommunityId = id;
+  const c = state.communities.find(x=>x.id===id);
+  document.getElementById('community-detail-title').textContent = c.emoji + ' ' + c.name;
+  renderTopicList();
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-comunidade-detail').classList.remove('hidden');
+}
+function renderTopicList(){
+  const c = state.communities.find(x=>x.id===state.activeCommunityId);
+  const el = document.getElementById('topic-list');
+  el.innerHTML = '';
+  c.topics.forEach(t=>{
+    const div = document.createElement('div');
+    div.className = 'topic';
+    div.dataset.action = 'open-topic';
+    div.dataset.id = t.id;
+    div.innerHTML = `<div class="ttitle">${escapeHtml(t.title)}</div><div class="tmeta">por ${escapeHtml(t.author)} · ${t.replies.length} respostas</div>`;
+    el.appendChild(div);
+  });
+}
+function addTopic(){
+  const txt = document.getElementById('topic-text').value.trim();
+  if(!txt) return;
+  const c = state.communities.find(x=>x.id===state.activeCommunityId);
+  c.topics.unshift({ id: Date.now(), title: txt, author: state.me.name, replies: [] });
+  document.getElementById('topic-text').value='';
+  renderTopicList();
+}
+function openTopic(id){
+  state.activeTopicId = id;
+  const c = state.communities.find(x=>x.id===state.activeCommunityId);
+  const t = c.topics.find(x=>x.id===id);
+  document.getElementById('topic-detail-title').textContent = t.title;
+  renderReplies();
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-topic-detail').classList.remove('hidden');
+}
+function renderReplies(){
+  const c = state.communities.find(x=>x.id===state.activeCommunityId);
+  const t = c.topics.find(x=>x.id===state.activeTopicId);
+  const el = document.getElementById('reply-list');
+  el.innerHTML = t.replies.map(r=>`<div class="reply"><b>${escapeHtml(r.author)}:</b> ${escapeHtml(r.text)}</div>`).join('') || '<div class="tmeta">Ainda sem respostas — seja o primeiro.</div>';
+}
+function addReply(){
+  const txt = document.getElementById('reply-text').value.trim();
+  if(!txt) return;
+  const c = state.communities.find(x=>x.id===state.activeCommunityId);
+  const t = c.topics.find(x=>x.id===state.activeTopicId);
+  t.replies.push({author: state.me.name, text: txt});
+  document.getElementById('reply-text').value='';
+  renderReplies();
+}
+function backToCommunity(){
+  openCommunity(state.activeCommunityId);
+}
+
+/* ======================= PÁGINAS PÚBLICAS ======================= */
+function renderPageList(){
+  const el = document.getElementById('page-list');
+  el.innerHTML = '';
+  state.pages.forEach(pg=>{
+    const following = state.followedPages.includes(pg.id);
+    const div = document.createElement('div');
+    div.className = 'page-card';
+    div.innerHTML = `
+      <div class="page-emoji">${pg.emoji}</div>
+      <div class="grow">
+        <div class="pgname"><span class="page-author-link" data-action="open-page" data-id="${pg.id}">${escapeHtml(pg.name)}</span>${badgeHtml(pg.verified)}</div>
+        <div class="pgmeta">${escapeHtml(pg.type)} · ${pg.followers + (following?1:0)} seguidores</div>
+      </div>
+      <button class="btn small ${following?'secondary':''}" data-action="toggle-follow-page" data-id="${pg.id}">${following?'Seguindo ✓':'Seguir'}</button>`;
+    el.appendChild(div);
+  });
+}
+function openPage(id){
+  state.activePageId = id;
+  renderPageDetail();
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('page-pagina-detail').classList.remove('hidden');
+}
+function renderPageDetail(){
+  const pg = state.pages.find(x=>x.id===state.activePageId);
+  const following = state.followedPages.includes(pg.id);
+  document.getElementById('pagina-detail-header').innerHTML = `
+    <div class="avatar lg">${pg.emoji}</div>
+    <div>
+      <div class="pname">${escapeHtml(pg.name)}${badgeHtml(pg.verified)}</div>
+      <div class="pbio">${escapeHtml(pg.type)} — ${escapeHtml(pg.bio)}</div>
+    </div>`;
+  document.getElementById('pagina-detail-stats').innerHTML = `
+    <div><b>${pg.followers + (following?1:0)}</b>seguidores</div>
+    <div><b>${pg.posts.length}</b>publicações</div>`;
+  const btn = document.getElementById('pagina-follow-btn');
+  btn.textContent = following ? 'Seguindo ✓' : 'Seguir';
+  btn.className = 'btn small' + (following ? ' secondary' : '');
+  btn.dataset.action = 'toggle-follow-page';
+  btn.dataset.id = pg.id;
+  document.getElementById('pagina-detail-posts').innerHTML = pg.posts.map(p=>`
+    <div class="post">
+      <div class="avatar sm">${pg.emoji}</div>
+      <div class="flex1">
+        <span class="name">${escapeHtml(pg.name)}${badgeHtml(pg.verified)}<span class="time">${p.time}</span></span>
+        <div class="text">${escapeHtml(p.text)}</div>
+        <div class="post-actions"><span>🤍 Curtir (${p.likes})</span><span>💬 Comentar (${p.comments})</span></div>
+      </div>
+    </div>`).join('');
+}
+function toggleFollowPage(id){
+  const idx = state.followedPages.indexOf(id);
+  if(idx===-1) state.followedPages.push(id); else state.followedPages.splice(idx,1);
+  renderPageList();
+  if(state.activePageId===id) renderPageDetail();
+}
+
+/* ======================= MENSAGENS ======================= */
+function renderSideFriends(){
+  const el = document.getElementById('side-friends-online');
+  const online = state.friends.filter(f=>f.online && state.showOnline);
+  el.innerHTML = online.length ? online.map(f=>`<div class="mb4">🟢 ${escapeHtml(f.name)}</div>`).join('') : '<span class="muted-inline">Ninguém online agora.</span>';
+}
+function renderMensagens(){
+  const listEl = document.getElementById('friend-list');
+  listEl.innerHTML = '';
+  state.friends.forEach(f=>{
+    const row = document.createElement('div');
+    row.className = 'friend-row' + (state.activeFriendId===f.id ? ' active':'');
+    row.dataset.action = 'open-chat';
+    row.dataset.id = f.id;
+    row.innerHTML = `
+      <div class="avatar sm">${f.initials}</div>
+      ${(f.online && state.showOnline) ? '<div class="dot"></div>' : ''}
+      <div><div class="fname">${escapeHtml(f.name)}</div><div class="fstatus">${(f.online && state.showOnline)?'Online agora':'Offline'}</div></div>`;
+    listEl.appendChild(row);
+  });
+  renderStrangerBox();
+  renderSideFriends();
+}
+function renderStrangerBox(){
+  const s = state.stranger;
+  const el = document.getElementById('stranger-box');
+  if(s.isFriend){
+    el.innerHTML = `<div class="stranger-card"><div class="avatar sm">${s.initials}</div><div class="grow"><b>${s.name}</b><div class="locked green-inline">✅ Agora vocês são amigos — mensagem liberada!</div></div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="stranger-card">
+      <div class="avatar sm">${s.initials}</div>
+      <div class="grow">
+        <b>${s.name}</b>
+        <div class="locked">🔒 Vocês ainda não são amigos — mensagem bloqueada por padrão (privacidade sempre).</div>
+      </div>
+      <div class="col-gap4">
+        <button class="btn small" data-action="add-friend">Adicionar amigo</button>
+        <button class="btn small secondary" disabled title="Só amigos podem enviar mensagem">Mensagem 🔒</button>
+      </div>
+    </div>`;
+}
+function addFriend(){
+  state.stranger.isFriend = true;
+  state.friends.push({ id: 99, name: state.stranger.name, initials: state.stranger.initials, online: true, messages:[] });
+  renderMensagens();
+}
+function openChat(friendId){
+  state.activeFriendId = friendId;
+  renderMensagens();
+  const f = state.friends.find(x=>x.id===friendId);
+  const chatArea = document.getElementById('chat-area');
+  chatArea.innerHTML = `
+    <div class="chat-header"><div class="avatar sm">${f.initials}</div> ${escapeHtml(f.name)} ${(f.online && state.showOnline)?'<span class="online-tag">● online</span>':''}</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Escreva uma mensagem...">
+      <button class="btn small" data-action="send-message">Enviar</button>
+    </div>`;
+  renderChatMessages();
+}
+function renderChatMessages(){
+  const f = state.friends.find(x=>x.id===state.activeFriendId);
+  const el = document.getElementById('chat-messages');
+  if(!el) return;
+  el.innerHTML = f.messages.map(m=>`<div class="msg ${m.from==='me'?'me':'them'}">${escapeHtml(m.text)}${state.readReceipts && m.from==='me' ? '<div class="read-receipt">visto ✓✓</div>':''}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendMessage(){
+  const input = document.getElementById('chat-input');
+  const txt = input.value.trim();
+  if(!txt) return;
+  const f = state.friends.find(x=>x.id===state.activeFriendId);
+  f.messages.push({from:'me', text: txt});
+  input.value='';
+  renderChatMessages();
+  setTimeout(()=>{
+    const replies = ["Haha, verdade!", "Boa, curti essa!", "kkkk imagina", "Bora marcar algo na comunidade então", "Tô on, me chama depois também 😄"];
+    f.messages.push({from:'them', text: replies[Math.floor(Math.random()*replies.length)]});
+    renderChatMessages();
+  }, 900);
+}
+
+/* ======================= PERFIL ======================= */
+state.recados = [
+  {author:"Maickel", text:"Parabéns pela ideia, amor — o OrkUp começou com você 💙"},
+  {author:"Renata Alves", text:"Bem-vinda ao OrkUp! Que bom te ver por aqui de novo 😄"},
+];
+function renderPerfil(){
+  const el = document.getElementById('recados-list');
+  el.innerHTML = state.recados.map(r=>`<div class="recado"><b>${escapeHtml(r.author)}:</b> ${escapeHtml(r.text)}</div>`).join('');
+  document.getElementById('toggle-online').classList.toggle('on', state.showOnline);
+  document.getElementById('toggle-readreceipt').classList.toggle('on', state.readReceipts);
+
+  const nameEl = document.getElementById('profile-name');
+  if(nameEl) nameEl.innerHTML = escapeHtml(state.me.name) + badgeHtml(state.me.verified);
+  const sideNameEl = document.getElementById('side-name');
+  if(sideNameEl) sideNameEl.innerHTML = escapeHtml(state.me.name) + badgeHtml(state.me.verified);
+  const topbarNameEl = document.getElementById('topbar-name');
+  if(topbarNameEl) topbarNameEl.innerHTML = escapeHtml(state.me.name) + badgeHtml(state.me.verified);
+
+  const statusEl = document.getElementById('verify-status');
+  if(statusEl){
+    if(state.me.verified){
+      statusEl.innerHTML = `<div class="locked green-inline">✅ Perfil verificado (simulação) — R$ 9,90/mês, cobrança demonstrativa apenas.</div>
+        <button class="btn small secondary" data-action="toggle-verified-demo">Remover selo (demo)</button>`;
+    } else {
+      statusEl.innerHTML = `<div class="locked">Perfil ainda não verificado.</div>
+        <button class="btn small" data-action="toggle-verified-demo">Simular pedido de selo — R$ 9,90/mês</button>`;
+    }
+  }
+}
+function addRecado(){
+  const txt = document.getElementById('recado-text').value.trim();
+  if(!txt) return;
+  state.recados.unshift({author: state.me.name, text: txt});
+  document.getElementById('recado-text').value='';
+  renderPerfil();
+}
+function toggleVerifiedDemo(){
+  state.me.verified = !state.me.verified;
+  renderPerfil();
+  renderFeed();
+}
+function toggleOnlineStatus(){
+  state.showOnline = !state.showOnline;
+  renderPerfil();
+  renderMensagens();
+}
+function toggleReadReceipt(){
+  state.readReceipts = !state.readReceipts;
+  renderPerfil();
+  renderChatMessages();
+}
+
+/* ======================= IA — AGE GATE + CHAT ======================= */
+function openAgeGate(){
+  if(state.ageConfirmed){ openAiModal(); return; }
+  document.getElementById('age-gate-modal').classList.remove('hidden');
+}
+function confirmAge(){
+  if(!document.getElementById('age-confirm').checked){ alert('Confirme que tem 18 anos ou mais para continuar (restrição definida na spec, seção 11.3).'); return; }
+  state.ageConfirmed = true;
+  closeModal('age-gate-modal');
+  openAiModal();
+}
+function openAiModal(){
+  document.getElementById('ai-modal').classList.remove('hidden');
+  if(state.aiMessages.length===0){
+    state.aiMessages.push({from:'ai', text:'Oi! Sou uma IA aqui do OrkUp, pensada pra quando você quiser companhia pra conversar. Como você está se sentindo hoje?'});
+  }
+  renderAiMessages();
+}
+function closeModal(id){
+  document.getElementById(id).classList.add('hidden');
+}
+function renderAiMessages(){
+  const el = document.getElementById('ai-chat-messages');
+  el.innerHTML = state.aiMessages.map(m=>{
+    if(m.from==='user') return `<div class="msg me">${escapeHtml(m.text)}</div>`;
+    if(m.from==='crisis') return `<div class="msg crisis"><b>💙 Um recurso de apoio:</b>${escapeHtml(m.text)}<div class="crisis-note">(prévia do fluxo de segurança descrito na seção 10.3/11.3 da spec)</div></div>`;
+    return `<div class="msg ai">${escapeHtml(m.text)}</div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendAiMessage(){
+  const input = document.getElementById('ai-input');
+  const txt = input.value.trim();
+  if(!txt) return;
+  state.aiMessages.push({from:'user', text:txt});
+  input.value='';
+  renderAiMessages();
+  setTimeout(()=>{
+    const lower = txt.toLowerCase();
+    const crisisWords = ['suicid','me matar','acabar com tudo','nao aguento mais','não aguento mais','quero morrer'];
+    const lonelyWords = ['sozinho','sozinha','solidao','solidão','triste','ninguem','ninguém'];
+    if(crisisWords.some(w=>lower.includes(w))){
+      state.aiMessages.push({from:'crisis', text: AI_CRISIS_MSG});
+    } else if(lonelyWords.some(w=>lower.includes(w))){
+      state.aiMessages.push({from:'ai', text: AI_LONELY[Math.floor(Math.random()*AI_LONELY.length)]});
+    } else {
+      state.aiMessages.push({from:'ai', text: AI_GENERIC[Math.floor(Math.random()*AI_GENERIC.length)]});
+    }
+    renderAiMessages();
+  }, 700);
+}
+
+/* ======================= UTIL ======================= */
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ======================= EVENTOS (delegados via addEventListener —
+   evita atributos onclick="" inline, que alguns visualizadores/preview
+   de HTML bloqueiam por segurança) ======================= */
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-action]');
+  if(!el) return;
+  const action = el.dataset.action;
+  const id = el.dataset.id !== undefined ? Number(el.dataset.id) : null;
+  switch(action){
+    case 'login': doLogin(); break;
+    case 'switch-page': switchPage(el.dataset.page); break;
+    case 'add-post': addPost(); break;
+    case 'toggle-like': toggleLike(id); break;
+    case 'focus-comment': focusComment(id); break;
+    case 'add-comment': addComment(id); break;
+    case 'open-community': openCommunity(id); break;
+    case 'add-topic': addTopic(); break;
+    case 'open-topic': openTopic(id); break;
+    case 'add-reply': addReply(); break;
+    case 'back-to-community': backToCommunity(); break;
+    case 'open-chat': openChat(id); break;
+    case 'add-friend': addFriend(); break;
+    case 'send-message': sendMessage(); break;
+    case 'add-recado': addRecado(); break;
+    case 'toggle-online-status': toggleOnlineStatus(); break;
+    case 'toggle-read-receipt': toggleReadReceipt(); break;
+    case 'open-age-gate': openAgeGate(); break;
+    case 'confirm-age': confirmAge(); break;
+    case 'close-modal': closeModal(el.dataset.modal); break;
+    case 'send-ai-message': sendAiMessage(); break;
+    case 'open-page': openPage(id); break;
+    case 'toggle-follow-page': toggleFollowPage(id); break;
+    case 'toggle-verified-demo': toggleVerifiedDemo(); break;
+  }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  if(e.target.id === 'chat-input') sendMessage();
+  if(e.target.id === 'ai-input') sendAiMessage();
+});
+</script>
+</body>
+</html>

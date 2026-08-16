@@ -1,26 +1,121 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f0f4fa;
+  --foreground: #1a2332;
+
+  /* Marca OrkUp — mesmas cores do protótipo e da logo original */
+  --blue-deep: #0b2a5b;
+  --blue: #1e4fa3;
+  --blue-light: #4d78c9;
+  --blue-lighter: #e8f0fd;
+  --border: #d7e1f0;
+  --text: #1a2332;
+  --muted: #5c6b80;
+  --accent: #1e4fa3;
+  --brand-pink: #ec4899;
+  --danger: #dc2626;
+  --green: #16a34a;
+  --radius: 10px;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  transition: background 0.15s ease;
+}
+.btn-primary:hover {
+  background: var(--blue-deep);
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--blue);
+  border: 1px solid var(--blue);
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.55rem 1.1rem;
+  transition: background 0.15s ease;
+}
+.btn-secondary:hover {
+  background: var(--blue-lighter);
+}
+
+.input-field {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  width: 100%;
+  background: #fff;
+  color: var(--text);
+}
+.input-field:focus {
+  outline: 2px solid var(--blue-light);
+  outline-offset: -1px;
+}
+
+.logo-mark {
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+.logo-mark .ork {
+  color: #fff;
+}
+.logo-mark .up {
+  color: var(--brand-pink);
+}
+
+.btn-logout {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+}
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  margin-left: 4px;
+  vertical-align: middle;
 }
