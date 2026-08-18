@@ -32,19 +32,43 @@ export function PostCard({ post, meId }: { post: PostRow; meId: string }) {
   return (
     <article className="card p-4 mb-4">
       <div className="flex items-center gap-3 mb-2">
-        <Avatar avatarUrl={post.author?.avatar_url} initials={post.author?.initials} size={40} />
-        <div>
-          <Link
-            href={`/perfil/${post.author?.username ?? ""}`}
-            className="font-semibold text-sm hover:underline"
-          >
-            {post.author?.display_name ?? "Usuário"}
-            <Badge verified={post.author?.verified ?? false} />
-          </Link>
-          <p className="text-xs" style={{ color: "var(--muted)" }}>
-            {timeAgo(post.created_at)}
-          </p>
-        </div>
+        {post.page ? (
+          <>
+            <Avatar
+              avatarUrl={post.page.avatar_url}
+              initials={post.page.name.slice(0, 2).toUpperCase()}
+              size={40}
+            />
+            <div>
+              <Link
+                href={`/paginas/${post.page.slug}`}
+                className="font-semibold text-sm hover:underline"
+              >
+                {post.page.name}
+                <Badge verified={post.page.verified} />
+              </Link>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                {timeAgo(post.created_at)}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <Avatar avatarUrl={post.author?.avatar_url} initials={post.author?.initials} size={40} />
+            <div>
+              <Link
+                href={`/perfil/${post.author?.username ?? ""}`}
+                className="font-semibold text-sm hover:underline"
+              >
+                {post.author?.display_name ?? "Usuário"}
+                <Badge verified={post.author?.verified ?? false} />
+              </Link>
+              <p className="text-xs" style={{ color: "var(--muted)" }}>
+                {timeAgo(post.created_at)}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {post.body && <p className="mb-3 whitespace-pre-wrap text-sm">{post.body}</p>}
