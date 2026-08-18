@@ -29,6 +29,7 @@ export function Navbar({
         <nav className="flex items-center gap-1 flex-1 flex-wrap">
           <NavLink href="/feed">Início</NavLink>
           <NavLink href="/comunidades">Comunidades</NavLink>
+          <NavLink href="/mensagens">Mensagens</NavLink>
           <NavLink href={`/perfil/${username}`}>Perfil</NavLink>
         </nav>
 
