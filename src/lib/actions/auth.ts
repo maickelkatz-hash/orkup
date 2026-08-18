@@ -37,10 +37,12 @@ export async function signUp(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=/feed`,
       data: {
         display_name: displayName,
         username,
@@ -50,10 +52,34 @@ export async function signUp(
   });
 
   if (error) {
+    if (error.code === "user_already_exists") {
+      return { error: "Já existe uma conta com esse e-mail. Tente entrar." };
+    }
     return { error: error.message };
   }
 
+  // Se "Confirm email" estiver ativado no projeto Supabase, o signUp não
+  // retorna uma sessão — o usuário só entra depois de clicar no link
+  // enviado por e-mail. Se estiver desativado, já vem com sessão e vai
+  // direto para o feed.
+  if (!data.session) {
+    redirect(`/confirmar-email?email=${encodeURIComponent(email)}`);
+  }
+
   redirect("/feed");
+}
+
+export async function resendConfirmation(email: string) {
+  if (!email) return { error: "E-mail inválido." };
+  const supabase = await createClient();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: { emailRedirectTo: `${siteUrl}/auth/confirm?next=/feed` },
+  });
+  if (error) return { error: error.message };
+  return { error: null };
 }
 
 export async function signIn(
