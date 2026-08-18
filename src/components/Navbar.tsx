@@ -32,6 +32,14 @@ export function Navbar({
           <NavLink href="/paginas">Páginas</NavLink>
           <NavLink href="/mensagens">Mensagens</NavLink>
           <NavLink href={`/perfil/${username}`}>Perfil</NavLink>
+          <Link
+            href="/amigo-ia"
+            className="text-sm font-semibold px-3 py-2 rounded-full"
+            style={{ background: "var(--brand-pink)", color: "#fff" }}
+            title="Conversar com o Amigo virtual de IA (18+)"
+          >
+            IA
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2 text-white text-sm">
