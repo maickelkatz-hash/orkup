@@ -18,13 +18,18 @@ export default async function FeedPage() {
         <form action={createPost}>
           <textarea
             name="body"
-            required
             rows={3}
             placeholder="O que está acontecendo?"
             className="input-field mb-2"
           />
-          <div className="flex justify-end">
-            <button type="submit" className="btn-primary">
+          <div className="flex items-center justify-between gap-3">
+            <input
+              type="file"
+              name="image"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="text-xs flex-1"
+            />
+            <button type="submit" className="btn-primary shrink-0">
               Publicar
             </button>
           </div>

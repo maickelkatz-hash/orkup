@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfilePosts } from "@/lib/data/posts";
 import { PostCard } from "@/components/PostCard";
+import { Avatar } from "@/components/Avatar";
+import { AvatarUploadForm } from "./AvatarUploadForm";
 import {
   sendFriendRequest,
   respondFriendRequest,
@@ -31,7 +33,7 @@ export default async function ProfilePage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name, username, initials, bio, verified, created_at")
+    .select("id, display_name, username, initials, avatar_url, bio, verified, created_at")
     .eq("username", username)
     .maybeSingle();
 
@@ -59,11 +61,9 @@ export default async function ProfilePage({
     <div className="max-w-xl mx-auto">
       <div className="card p-6 mb-4">
         <div className="flex items-start gap-4">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shrink-0"
-            style={{ background: "var(--blue)" }}
-          >
-            {profile.initials}
+          <div>
+            <Avatar avatarUrl={profile.avatar_url} initials={profile.initials} size={64} />
+            {isMe && <AvatarUploadForm />}
           </div>
           <div className="flex-1">
             <h1 className="text-lg font-bold">

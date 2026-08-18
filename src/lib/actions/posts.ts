@@ -3,9 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+
 export async function createPost(formData: FormData) {
   const body = String(formData.get("body") || "").trim();
-  if (!body) return;
+  const image = formData.get("image") as File | null;
+  if (!body && (!image || image.size === 0)) return;
 
   const supabase = await createClient();
   const {
@@ -13,7 +17,37 @@ export async function createPost(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase.from("posts").insert({ author_id: user.id, body });
+  const hasValidImage =
+    !!image &&
+    image.size > 0 &&
+    ALLOWED_IMAGE_TYPES.includes(image.type) &&
+    image.size <= MAX_IMAGE_BYTES;
+
+  // Formato/tamanho inválido e sem texto: não há o que publicar.
+  if (image && image.size > 0 && !hasValidImage && !body) return;
+
+  let imageUrl: string | null = null;
+
+  if (hasValidImage) {
+    const ext = image!.type.split("/")[1] || "jpg";
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(path, image!, { cacheControl: "3600" });
+
+    if (!uploadError) {
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("post-images").getPublicUrl(path);
+      imageUrl = publicUrl;
+    }
+  }
+
+  if (!body && !imageUrl) return;
+
+  await supabase
+    .from("posts")
+    .insert({ author_id: user.id, body: body || "", image_url: imageUrl });
   revalidatePath("/feed");
   revalidatePath("/perfil/[username]", "page");
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PostRow } from "@/lib/data/posts";
 import { toggleLike, addComment } from "@/lib/actions/posts";
+import { Avatar } from "@/components/Avatar";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -31,12 +32,7 @@ export function PostCard({ post, meId }: { post: PostRow; meId: string }) {
   return (
     <article className="card p-4 mb-4">
       <div className="flex items-center gap-3 mb-2">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
-          style={{ background: "var(--blue)" }}
-        >
-          {post.author?.initials ?? "?"}
-        </div>
+        <Avatar avatarUrl={post.author?.avatar_url} initials={post.author?.initials} size={40} />
         <div>
           <Link
             href={`/perfil/${post.author?.username ?? ""}`}
@@ -51,7 +47,17 @@ export function PostCard({ post, meId }: { post: PostRow; meId: string }) {
         </div>
       </div>
 
-      <p className="mb-3 whitespace-pre-wrap text-sm">{post.body}</p>
+      {post.body && <p className="mb-3 whitespace-pre-wrap text-sm">{post.body}</p>}
+
+      {post.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element -- conteúdo do usuário
+        <img
+          src={post.image_url}
+          alt=""
+          loading="lazy"
+          className="w-full max-h-[480px] object-cover rounded-lg mb-3"
+        />
+      )}
 
       <div className="flex items-center gap-4 text-sm" style={{ color: "var(--muted)" }}>
         <form action={toggleLike}>

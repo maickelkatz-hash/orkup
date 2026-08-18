@@ -3,12 +3,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type PostRow = {
   id: string;
   body: string;
+  image_url: string | null;
   created_at: string;
   author_id: string;
   author: {
     display_name: string;
     username: string;
     initials: string;
+    avatar_url: string | null;
     verified: boolean;
   } | null;
   likes: { user_id: string }[];
@@ -20,15 +22,16 @@ export type PostRow = {
       display_name: string;
       username: string;
       initials: string;
+      avatar_url: string | null;
     } | null;
   }[];
 };
 
 const POST_SELECT = `
-  id, body, created_at, author_id,
-  author:profiles!posts_author_id_fkey ( display_name, username, initials, verified ),
+  id, body, image_url, created_at, author_id,
+  author:profiles!posts_author_id_fkey ( display_name, username, initials, avatar_url, verified ),
   likes ( user_id ),
-  comments ( id, body, created_at, author:profiles!comments_author_id_fkey ( display_name, username, initials ) )
+  comments ( id, body, created_at, author:profiles!comments_author_id_fkey ( display_name, username, initials, avatar_url ) )
 `;
 
 // Feed: chronological, no ranking of any kind — RLS already restricts rows

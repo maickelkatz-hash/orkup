@@ -18,7 +18,7 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, username, verified")
+    .select("display_name, username, verified, avatar_url, initials")
     .eq("id", user.id)
     .single();
 
@@ -28,6 +28,8 @@ export default async function AppLayout({
         displayName={profile?.display_name ?? "Você"}
         username={profile?.username ?? ""}
         verified={profile?.verified ?? false}
+        avatarUrl={profile?.avatar_url}
+        initials={profile?.initials}
       />
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6">
         {children}

@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { signOut } from "@/lib/actions/auth";
+import { Avatar } from "@/components/Avatar";
 
 export function Navbar({
   displayName,
   username,
   verified,
+  avatarUrl,
+  initials,
 }: {
   displayName: string;
   username: string;
   verified: boolean;
+  avatarUrl?: string | null;
+  initials?: string | null;
 }) {
   return (
     <header
@@ -28,6 +33,7 @@ export function Navbar({
         </nav>
 
         <div className="flex items-center gap-2 text-white text-sm">
+          <Avatar avatarUrl={avatarUrl} initials={initials} size={28} />
           <span>
             {displayName}
             {verified && <span className="verified-badge" title="Perfil verificado">✓</span>}
