@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createCommunity, joinCommunity, leaveCommunity } from "@/lib/actions/communities";
+import { Avatar } from "@/components/Avatar";
 
 export default async function ComunidadesPage() {
   const supabase = await createClient();
@@ -11,7 +12,7 @@ export default async function ComunidadesPage() {
 
   const { data: communities } = await supabase
     .from("communities")
-    .select("id, name, description, created_at, community_members(user_id)")
+    .select("id, name, description, avatar_url, created_at, community_members(user_id)")
     .order("created_at", { ascending: false });
 
   return (
@@ -50,18 +51,21 @@ export default async function ComunidadesPage() {
         const isMember = members.some((m) => m.user_id === user.id);
         return (
           <div key={c.id} className="card p-4 mb-3 flex items-start justify-between gap-3">
-            <div>
-              <Link href={`/comunidades/${c.id}`} className="font-semibold hover:underline">
-                {c.name}
-              </Link>
-              {c.description && (
-                <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
-                  {c.description}
+            <div className="flex items-start gap-3">
+              <Avatar avatarUrl={c.avatar_url} initials={c.name.slice(0, 2).toUpperCase()} size={44} />
+              <div>
+                <Link href={`/comunidades/${c.id}`} className="font-semibold hover:underline">
+                  {c.name}
+                </Link>
+                {c.description && (
+                  <p className="text-sm mt-1" style={{ color: "var(--muted)" }}>
+                    {c.description}
+                  </p>
+                )}
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+                  {members.length} membro{members.length === 1 ? "" : "s"}
                 </p>
-              )}
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                {members.length} membro{members.length === 1 ? "" : "s"}
-              </p>
+              </div>
             </div>
             {isMember ? (
               <form action={leaveCommunity}>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createReply } from "@/lib/actions/communities";
+import { createReply, deleteReply } from "@/lib/actions/communities";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -28,12 +28,15 @@ export default async function TopicPage({
   const { data: topic } = await supabase
     .from("topics")
     .select(
-      "id, title, created_at, community_id, author:profiles!topics_author_id_fkey(display_name, initials)"
+      "id, title, created_at, community_id, author:profiles!topics_author_id_fkey(display_name, initials), community:communities(creator_id)"
     )
     .eq("id", topicId)
     .maybeSingle();
 
   if (!topic) notFound();
+
+  const community = topic.community as unknown as { creator_id: string } | null;
+  const isModerator = community?.creator_id === user.id;
 
   const { data: replies } = await supabase
     .from("replies")
@@ -73,7 +76,7 @@ export default async function TopicPage({
               >
                 {author?.initials ?? "?"}
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="text-sm">
                   <span className="font-semibold">{author?.display_name ?? "Usuário"}</span>{" "}
                   <span style={{ color: "var(--muted)" }} className="text-xs">
@@ -82,6 +85,16 @@ export default async function TopicPage({
                 </p>
                 <p className="text-sm mt-0.5">{r.body}</p>
               </div>
+              {isModerator && (
+                <form action={deleteReply}>
+                  <input type="hidden" name="replyId" value={r.id} />
+                  <input type="hidden" name="communityId" value={id} />
+                  <input type="hidden" name="topicId" value={topicId} />
+                  <button type="submit" className="text-xs shrink-0" style={{ color: "var(--danger)" }}>
+                    Remover
+                  </button>
+                </form>
+              )}
             </div>
           );
         })}
