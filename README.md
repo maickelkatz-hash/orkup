@@ -8,6 +8,13 @@ Páginas Públicas (empresas/marcas/criadores) e a base do Amigo virtual de
 IA (18+, com detecção de sinais de crise) — construído com Next.js (App
 Router) + Supabase.
 
+**Perfil completo** (paridade com concorrentes que já tinham essa camada):
+recados no mural, depoimentos com aprovação do dono do perfil, fãs
+(admiradores, sem exigir amizade mútua), selos de reação fiel/legal/sexy
+e perfil detalhado por abas Social/Profissional/Pessoal (relação,
+interesses no OrkUp, filhos, orientação sexual, fuma, atividades, livros,
+música, ocupação, empresa, formação) — ver seção 9.
+
 Ainda **não** incluídos (ver `orkup-spec-produto.md`): selo de
 verificação pago, moderação automática de conteúdo (OpenAI/Rekognition),
 chamada real ao modelo de IA (hoje é um stub — ver seção 8), Cloudflare
@@ -35,6 +42,10 @@ suficiente para o piloto).
       página no mesmo feed cronológico).
    5. `0005_ai_companion.sql` — base do Amigo virtual de IA (portão de
       idade 18+, histórico de conversa isolado por usuário).
+   6. `0006_communities_upgrade.sql` — ajustes de comunidades (avatar,
+      poder de moderador do criador).
+   7. `0007_perfil_completo.sql` — campos estendidos de perfil, recados,
+      depoimentos, fãs e selos fiel/legal/sexy (ver seção 9).
 3. Em **Project Settings → API**, copie:
    - `Project URL`
    - a chave publicável (`sb_publishable_...`, formato novo — substitui a
@@ -213,3 +224,32 @@ Seguindo o roadmap do `orkup-spec-produto.md`:
    piloto, mas R2 não cobra taxa de saída de dados a longo prazo).
 5. Banner de consentimento de cookies em três camadas (LGPD/ANPD) antes
    de ligar anúncios personalizados do Google AdSense.
+## 9. Perfil completo (recados, depoimentos, fãs, selos)
+
+Implementado para fechar a lacuna em relação a concorrentes que já têm
+essa camada de identidade (perfil detalhado estilo Orkut clássico).
+Tudo em `supabase/migrations/0007_perfil_completo.sql` +
+`src/lib/actions/{recados,depoimentos,fans,badges,profile-details}.ts` +
+componentes em `src/app/(app)/perfil/[username]/`.
+
+- **Recados**: mensagem pública no mural de outra pessoa. Só entre
+  amigos aceitos (ou no próprio mural) — mesma filosofia de privacidade
+  do mensageiro (seção 3.4 da spec). Autor ou dono do mural podem apagar.
+- **Depoimentos**: testemunho permanente, mas fica **pendente** até o
+  dono do perfil aprovar — só amigos podem escrever, um por pessoa.
+- **Fãs**: relação unidirecional "sou fã de", sem exigir amizade mútua —
+  só um contador/lista, não afeta feed nem mensageiro.
+- **Selos fiel/legal/sexy**: reação rápida por perfil, um voto por tipo
+  por pessoa (clique de novo pra desfazer). Como o selo de verificação
+  (seção 4.1), é **só exibição** — não existe nenhum mecanismo no schema
+  que use isso pra alterar alcance ou ordenação (princípio da seção 3.7).
+- **Perfil detalhado**: campos novos em `profiles` (data de nascimento,
+  relação, interesses no OrkUp, filhos, orientação sexual, fuma,
+  atividades, livros, música, ocupação, empresa, formação) + campo
+  "quem sou" em texto livre — organizados em abas Social/Profissional/
+  Pessoal na página de perfil, editáveis só pelo próprio dono.
+
+**Deliberadamente fora desta entrega**: "quem sou" em áudio (ficou
+texto por enquanto — gravação/upload de áudio é trabalho futuro) e apps
+de terceiros plugáveis no perfil (fora do escopo do produto por ora).
+
