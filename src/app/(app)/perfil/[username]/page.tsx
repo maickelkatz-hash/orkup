@@ -4,6 +4,10 @@ import { fetchProfilePosts } from "@/lib/data/posts";
 import { PostCard } from "@/components/PostCard";
 import { Avatar } from "@/components/Avatar";
 import { AvatarUploadForm } from "./AvatarUploadForm";
+import { SobreSection } from "./SobreSection";
+import { RecadosSection, type Recado } from "./RecadosSection";
+import { DepoimentosSection, type Depoimento } from "./DepoimentosSection";
+import { FanAndBadges } from "./FanAndBadges";
 import {
   sendFriendRequest,
   respondFriendRequest,
@@ -33,7 +37,11 @@ export default async function ProfilePage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name, username, initials, avatar_url, bio, verified, created_at")
+    .select(
+      `id, display_name, username, initials, avatar_url, bio, verified, created_at,
+       quem_sou, birth_date, relationship_status, platform_interest, has_children,
+       sexual_orientation, smokes, activities, books, music, occupation, employer, education`
+    )
     .eq("username", username)
     .maybeSingle();
 
@@ -49,6 +57,8 @@ export default async function ProfilePage({
     )
     .maybeSingle();
 
+  const isFriend = friendship?.status === "accepted";
+
   const { count: friendCount } = await supabase
     .from("friendships")
     .select("id", { count: "exact", head: true })
@@ -56,6 +66,74 @@ export default async function ProfilePage({
     .or(`requester_id.eq.${profile.id},addressee_id.eq.${profile.id}`);
 
   const posts = await fetchProfilePosts(supabase, profile.id);
+
+  // Recados: visíveis a quem já pode ver o perfil (RLS filtra de qualquer forma;
+  // aqui só evitamos a query pra quem certamente não teria nada visível).
+  const { data: recadosRaw } = await supabase
+    .from("recados")
+    .select(
+      "id, body, created_at, author:profiles!recados_author_id_fkey ( id, username, display_name, initials, avatar_url )"
+    )
+    .eq("profile_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const recados = (recadosRaw ?? []) as unknown as Recado[];
+
+  const { data: depoimentosApprovedRaw } = await supabase
+    .from("depoimentos")
+    .select(
+      "id, body, status, created_at, author:profiles!depoimentos_author_id_fkey ( id, username, display_name, initials, avatar_url )"
+    )
+    .eq("profile_id", profile.id)
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
+  const depoimentosApproved = (depoimentosApprovedRaw ?? []) as unknown as Depoimento[];
+
+  let depoimentosPending: Depoimento[] = [];
+  let alreadyWrote = false;
+  if (isMe) {
+    const { data: pendingRaw } = await supabase
+      .from("depoimentos")
+      .select(
+        "id, body, status, created_at, author:profiles!depoimentos_author_id_fkey ( id, username, display_name, initials, avatar_url )"
+      )
+      .eq("profile_id", profile.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    depoimentosPending = (pendingRaw ?? []) as unknown as Depoimento[];
+  } else if (isFriend) {
+    const { data: mine } = await supabase
+      .from("depoimentos")
+      .select("id")
+      .eq("profile_id", profile.id)
+      .eq("author_id", user.id)
+      .maybeSingle();
+    alreadyWrote = Boolean(mine);
+  }
+
+  const { count: fanCount } = await supabase
+    .from("fans")
+    .select("fan_id", { count: "exact", head: true })
+    .eq("target_id", profile.id);
+
+  const { data: myFanRow } = await supabase
+    .from("fans")
+    .select("fan_id")
+    .eq("fan_id", user.id)
+    .eq("target_id", profile.id)
+    .maybeSingle();
+
+  const { data: badgeRows } = await supabase
+    .from("profile_badges")
+    .select("voter_id, badge_type")
+    .eq("profile_id", profile.id);
+
+  const badgeCounts: Record<string, number> = { fiel: 0, legal: 0, sexy: 0 };
+  const myVotes = new Set<string>();
+  for (const row of badgeRows ?? []) {
+    badgeCounts[row.badge_type] = (badgeCounts[row.badge_type] ?? 0) + 1;
+    if (row.voter_id === user.id) myVotes.add(row.badge_type);
+  }
 
   return (
     <div className="max-w-xl mx-auto">
@@ -75,6 +153,15 @@ export default async function ProfilePage({
               {(friendCount ?? 0) === 1 ? "" : "s"}
             </p>
             {profile.bio && <p className="text-sm mt-2">{profile.bio}</p>}
+
+            <FanAndBadges
+              profileId={profile.id}
+              isMe={isMe}
+              fanCount={fanCount ?? 0}
+              isFan={Boolean(myFanRow)}
+              badgeCounts={badgeCounts}
+              myVotes={myVotes}
+            />
           </div>
         </div>
 
@@ -132,6 +219,44 @@ export default async function ProfilePage({
           </div>
         )}
       </div>
+
+      <SobreSection
+        profileId={profile.id}
+        isMe={isMe}
+        details={{
+          bio: profile.bio,
+          quem_sou: profile.quem_sou,
+          birth_date: profile.birth_date,
+          relationship_status: profile.relationship_status,
+          platform_interest: profile.platform_interest,
+          has_children: profile.has_children,
+          sexual_orientation: profile.sexual_orientation,
+          smokes: profile.smokes,
+          activities: profile.activities,
+          books: profile.books,
+          music: profile.music,
+          occupation: profile.occupation,
+          employer: profile.employer,
+          education: profile.education,
+        }}
+      />
+
+      <RecadosSection
+        profileId={profile.id}
+        meId={user.id}
+        isMe={isMe}
+        canPost={isMe || isFriend}
+        recados={recados}
+      />
+
+      <DepoimentosSection
+        profileId={profile.id}
+        isMe={isMe}
+        canWrite={!isMe && isFriend}
+        alreadyWrote={alreadyWrote}
+        approved={depoimentosApproved}
+        pending={depoimentosPending}
+      />
 
       {posts.length === 0 && (
         <div className="card p-6 text-center text-sm" style={{ color: "var(--muted)" }}>
