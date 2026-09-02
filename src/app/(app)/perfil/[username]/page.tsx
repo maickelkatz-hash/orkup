@@ -135,6 +135,15 @@ export default async function ProfilePage({
     if (row.voter_id === user.id) myVotes.add(row.badge_type);
   }
 
+  // Contagem de fotos: mesma regra de visibilidade dos posts (RLS já filtra
+  // só o que o visitante pode ver — próprio dono, amigos aceitos, ou posts
+  // de página). Não é uma tabela nova: fotos vivem em posts.image_url.
+  const { count: photoCount } = await supabase
+    .from("posts")
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", profile.id)
+    .not("image_url", "is", null);
+
   return (
     <div className="max-w-xl mx-auto">
       <div className="card p-6 mb-4">
@@ -150,7 +159,10 @@ export default async function ProfilePage({
             </h1>
             <p className="text-sm" style={{ color: "var(--muted)" }}>
               @{profile.username} · {friendCount ?? 0} amigo
-              {(friendCount ?? 0) === 1 ? "" : "s"}
+              {(friendCount ?? 0) === 1 ? "" : "s"} ·{" "}
+              <a href={`/perfil/${profile.username}/fotos`} style={{ color: "var(--blue)" }}>
+                {photoCount ?? 0} foto{(photoCount ?? 0) === 1 ? "" : "s"}
+              </a>
             </p>
             {profile.bio && <p className="text-sm mt-2">{profile.bio}</p>}
 
