@@ -30,7 +30,7 @@ export function PostCard({ post, meId }: { post: PostRow; meId: string }) {
   );
 
   return (
-    <article className="card p-4 mb-4">
+    <article id={`post-${post.id}`} className="card p-4 mb-4">
       <div className="flex items-center gap-3 mb-2">
         {post.page ? (
           <>
